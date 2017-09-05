@@ -13,6 +13,7 @@ set -ex
 # SET THESE FIELDS.  Do not use semicolons.
 password='open-sesame'
 callsign='W1AW-R'
+identify='W1AW'
 repeater='Gotham Repeater'
 subtitle='G0THM/R www.gotham.demo'
 timeout='20'
@@ -21,6 +22,7 @@ function copy() {
 sed \
   -e "s;%password%;$password;" \
   -e "s;%callsign%;$callsign;" \
+  -e "s;%identify%;$identify;" \
   -e "s;%repeater%;$repeater;" \
   -e "s;%subtitle%;$subtitle;" \
   -e "s;%timeout%;$timeout;" \

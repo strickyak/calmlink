@@ -132,7 +132,7 @@ proc send_short_ident {{hour -1} {minute -1}} {
   variable CFG_TYPE;
 
   # YAK yak
-  CW::play %callsign%
+  CW::play %identify%
 
   #spellWord $mycall;
   #if {$CFG_TYPE == "Repeater"} {
@@ -461,7 +461,7 @@ proc checkPeriodicIdentify {} {
 
   if {$need_ident && !$rx_squelch_open} {
     if {$now - $prev_ident >= $min_time_between_ident} {
-      CW::play %callsign%
+      CW::play %identify%
       set prev_ident $now
       set need_ident 0
       puts "@@@@@@ $ts Logic: PLAYED IDENT"
