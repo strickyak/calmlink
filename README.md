@@ -2,7 +2,10 @@
 Configs for using svxlink to connect an EchoLink station by RF to an existing repeater, calmly, without extra noise.
 
 Svxlink is very modular and flexible, but seems to be designed primarily for the case
-where Svxlink is your repeater controller.  It supports DTMF commands sent by users over RF.
+where Svxlink is your repeater controller.  For instance,
+it supports DTMF commands sent by users over RF, and has voice responses to such,
+and other voice announcements about connections & disconnections, module
+activations & deactivations, etc.
 
 In my case, we have an existing repeater N6NFI/R, and it has a repeater controller already.
 I want to connect my echolink station W6REK-R by RF to N6NFI/R (as a repeater user),
