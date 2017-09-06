@@ -24,35 +24,20 @@ if {![info exists CFG_ID]} {
 #
 set module_name [namespace tail [namespace current]];
 
-# YAK yak {
 proc clean {s} {
   regsub -all {[^ -~]+} $s {~}
 }
-proc say {args} {
-  puts "[clock format [clock seconds] -format {%H:%M:%S}] [clean $args]"
+
+proc playSilence {_} { }
+proc playTone {_ _ _} { }
+proc playMsg {_} { }
+
+proc NoteCalmly {} {
+  set now [clock seconds]
+  set ts [clock format $now -format {%d@%H:%M:%S} -gmt 1]
+  puts [clean "$ts EchoLink: ## [info level -1] ##"]
   flush stdout
 }
-proc sayno {s} {
-  puts -nonewline [clean $s]
-  flush stdout
-}
-
-#
-# An "overloaded" playMsg that eliminates the need to write the module name
-# as the first argument.
-#
-proc playSilence {_} {
-  sayno { _ }
-}
-proc playTone {_ _ _} {
-  sayno { % }
-}
-proc playMsg {msg} {
-  variable module_name;
-  say  EchoLink: ::playMsg $module_name $msg;
-}
-
-# YAK yak }
 
 #
 # A convenience function for printing out information prefixed by the
@@ -75,6 +60,7 @@ variable num_connected_stations 0;
 # Executed when this module is being activated
 #
 proc activating_module {} {
+  NoteCalmly
   variable module_name;
   Module::activating_module $module_name;
 }
@@ -84,6 +70,7 @@ proc activating_module {} {
 # Executed when this module is being deactivated.
 #
 proc deactivating_module {} {
+  NoteCalmly
   variable module_name;
   Module::deactivating_module $module_name;
 }
@@ -93,6 +80,7 @@ proc deactivating_module {} {
 # Executed when the inactivity timeout for this module has expired.
 #
 proc timeout {} {
+  NoteCalmly
   variable module_name;
   Module::timeout $module_name;
 }
@@ -102,6 +90,7 @@ proc timeout {} {
 # Executed when playing of the help message for this module has been requested.
 #
 proc play_help {} {
+  NoteCalmly
   variable module_name;
   Module::play_help $module_name;
 }
@@ -111,6 +100,8 @@ proc play_help {} {
 # Spell an EchoLink callsign
 #
 proc spellEchoLinkCallsign {call} {
+  NoteCalmly
+  return
   global langdir
   if [regexp {^(\w+)-L$} $call ignored callsign] {
     spellWord $callsign
@@ -226,6 +217,7 @@ proc already_connected_to {call} {
 # Executed when an internal error occurs.
 #
 proc internal_error {} {
+  NoteCalmly
   playMsg "operation_failed";
 }
 
@@ -234,6 +226,7 @@ proc internal_error {} {
 # Executed when an outgoing connection has been requested.
 #
 proc connecting_to {call} {
+  NoteCalmly
   playMsg "connecting_to";
   spellEchoLinkCallsign $call;
   playSilence 500;
@@ -244,6 +237,7 @@ proc connecting_to {call} {
 # Executed when an EchoLink connection has been terminated
 #
 proc disconnected {call} {
+  NoteCalmly
   spellEchoLinkCallsign $call;
   playMsg "disconnected";
   playSilence 500;
@@ -254,6 +248,7 @@ proc disconnected {call} {
 # Executed when an incoming EchoLink connection has been accepted.
 #
 proc remote_connected {call} {
+  NoteCalmly
   playMsg "connected";
   spellEchoLinkCallsign $call;
   playSilence 500;
@@ -264,6 +259,7 @@ proc remote_connected {call} {
 # Executed when an outgoing connection has been established.
 #
 proc connected {} {
+  NoteCalmly
   playMsg "connected";
   playSilence 500;
 }
@@ -274,14 +270,9 @@ proc connected {} {
 #   client_list - List of connected clients
 #
 proc client_list_changed {client_list} {
-  # YAK yak
-  say EchoLink: "client_list_changed: [lsort $client_list]"
-  # YAK yak
-
-
-  #foreach {call} $client_list {
-  #  puts $call
-  #}
+  NoteCalmly
+  foreach {call} $client_list {
+  }
 }
 
 
@@ -290,6 +281,7 @@ proc client_list_changed {client_list} {
 # connection will be terminated.
 #
 proc link_inactivity_timeout {} {
+  NoteCalmly
   playMsg "timeout";
 }
 
@@ -298,6 +290,7 @@ proc link_inactivity_timeout {} {
 # Executed when a too short connect by callsign command is received
 #
 proc cbc_too_short_cmd {cmd} {
+  NoteCalmly
   spellWord $cmd;
   playSilence 50;
   playMsg "operation_failed";
@@ -308,6 +301,7 @@ proc cbc_too_short_cmd {cmd} {
 # Executed when the connect by callsign function cannot find a match
 #
 proc cbc_no_match {code} {
+  NoteCalmly
   playNumber $code;
   playSilence 50;
   playMsg "no_match";
@@ -318,6 +312,7 @@ proc cbc_no_match {code} {
 # Executed when the connect by callsign list has been retrieved
 #
 proc cbc_list {call_list} {
+  NoteCalmly
   playMsg "choose_station";
   set idx 0;
   foreach {call} $call_list {
@@ -334,6 +329,7 @@ proc cbc_list {call_list} {
 # Executed when the connect by callsign function is manually aborted
 #
 proc cbc_aborted {} {
+  NoteCalmly
   playMsg "aborted";
 }
 
@@ -343,6 +339,7 @@ proc cbc_aborted {} {
 # list
 #
 proc cbc_index_out_of_range {idx} {
+  NoteCalmly
   playNumber $idx;
   playSilence 50;
   playMsg "idx_out_of_range";
@@ -354,6 +351,7 @@ proc cbc_index_out_of_range {idx} {
 # callsign function
 #
 proc cbc_too_many_matches {} {
+  NoteCalmly
   playMsg "too_many_matches";
 }
 
@@ -363,6 +361,7 @@ proc cbc_too_many_matches {} {
 # by callsign function
 #
 proc cbc_timeout {} {
+  NoteCalmly
   playMsg "aborted";
 }
 
@@ -371,6 +370,7 @@ proc cbc_timeout {} {
 # Executed when the disconnect by callsign list has been retrieved
 #
 proc dbc_list {call_list} {
+  NoteCalmly
   playMsg "disconnect_by_callsign";
   playSilence 200
   playMsg "choose_station";
@@ -389,6 +389,7 @@ proc dbc_list {call_list} {
 # Executed when the disconnect by callsign function is manually aborted
 #
 proc dbc_aborted {} {
+  NoteCalmly
   playMsg "disconnect_by_callsign";
   playMsg "aborted";
 }
@@ -399,6 +400,7 @@ proc dbc_aborted {} {
 # list
 #
 proc dbc_index_out_of_range {idx} {
+  NoteCalmly
   playNumber $idx;
   playSilence 50;
   playMsg "idx_out_of_range";
@@ -410,6 +412,7 @@ proc dbc_index_out_of_range {idx} {
 # by callsign function
 #
 proc dbc_timeout {} {
+  NoteCalmly
   playMsg "disconnect_by_callsign";
   playMsg "timeout";
 }
@@ -420,6 +423,7 @@ proc dbc_timeout {} {
 # local node ID.
 #
 proc play_node_id {my_node_id} {
+  NoteCalmly
   playMsg "node_id_is";
   playSilence 200;
   if { $my_node_id != 0} {
@@ -434,6 +438,7 @@ proc play_node_id {my_node_id} {
 # Executed when an entered command failed or have bad syntax.
 #
 proc command_failed {cmd} {
+  NoteCalmly
   spellWord $cmd;
   playMsg "operation_failed";
 }
@@ -443,6 +448,7 @@ proc command_failed {cmd} {
 # Executed when an unrecognized command has been received.
 #
 proc unknown_command {cmd} {
+  NoteCalmly
   spellWord $cmd;
   playMsg "unknown_command";
 }
@@ -455,6 +461,7 @@ proc unknown_command {cmd} {
 #               (0=deactivate, 1=activate)
 #
 proc listen_only {status activate} {
+  NoteCalmly
   variable module_name;
 
   if {$status == $activate} {
@@ -474,6 +481,7 @@ proc listen_only {status activate} {
 # REJECT_OUTGOING and/or ACCEPT_OUTGOING has been setup.
 #
 proc reject_outgoing_connection {call} {
+  NoteCalmly
   spellEchoLinkCallsign $call;
   playSilence 50;
   playMsg "reject_connection";
@@ -488,6 +496,7 @@ proc reject_outgoing_connection {call} {
 #
 #
 proc is_receiving {rx call} {
+  NoteCalmly
   if {$rx == 0} {
     playTone 1000 100 100;
   }
@@ -504,6 +513,7 @@ proc is_receiving {rx call} {
 # as unknown data that can contain anything. Check it thoroughly before
 # using it.
 proc chat_received {msg} {
+  NoteCalmly
   #puts $msg
 }
 
@@ -517,6 +527,7 @@ proc chat_received {msg} {
 # Executed when an incoming connection is accepted
 #
 proc remote_greeting {call} {
+  NoteCalmly
   playSilence 1000;
   playMsg "greeting";
 }
@@ -526,6 +537,7 @@ proc remote_greeting {call} {
 # Executed when an incoming connection is rejected
 #
 proc reject_remote_connection {perm} {
+  NoteCalmly
   playSilence 1000;
   if {$perm} {
     playMsg "reject_connection";
@@ -541,6 +553,7 @@ proc reject_remote_connection {perm} {
 # Executed when the inactivity timer times out
 #
 proc remote_timeout {} {
+  NoteCalmly
   playMsg "timeout";
   playSilence 1000;
 }
@@ -550,36 +563,12 @@ proc remote_timeout {} {
 # Executed when the squelch state changes
 #
 proc squelch_open {is_open} {
+  NoteCalmly
   if {!$is_open} {
-    catch {
-      playSilence 200
-      playTone 1000 100 100
-    } what
-    puts "@@@ EchoLink: squelch_open what: $what"
-  }
-  puts "@@@ EchoLink: squelch_open $is_open == $::Logic::sql_rx_id @@@"
-}
-
-proc squelch_open2 {rx_id is_open} {
-  return
-  #if {!$is_open} {
-    #playSilence 200
-    #playTone 1000 100 100
-  #}
-  puts "@@@ EchoLink: squelch_open2 $rx_id $is_open @@@"
-  foreach x [info globals] {
-    catch {
-	upvar #0 $x a
-	puts "=== $x === $a ==="
-    }
+    playSilence 200
+    playTone 1000 100 100
   }
 }
-
-# YAK yak {
-proc spellEchoLinkCallsign {call} {
-  sayno " (($call)) "
-}
-# YAK yak }
 
 
 # end of namespace

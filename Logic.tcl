@@ -9,7 +9,6 @@
 #
 namespace eval Logic {
 
-variable rx_squelch_open 0;
 
 #
 # A variable used to store a timestamp for the last identification.
@@ -20,7 +19,7 @@ variable prev_ident 0;
 # A constant that indicates the minimum time in seconds to wait between two
 # identifications. Manual and long identifications is not affected.
 #
-variable min_time_between_ident 300;
+variable min_time_between_ident 120;
 
 #
 # Short and long identification intervals. They are setup from config
@@ -131,13 +130,10 @@ proc send_short_ident {{hour -1} {minute -1}} {
   global mycall;
   variable CFG_TYPE;
 
-  # YAK yak
-  CW::play %identify%
-
-  #spellWord $mycall;
-  #if {$CFG_TYPE == "Repeater"} {
-  #  playMsg "Core" "repeater";
-  #}
+  spellWord $mycall;
+  if {$CFG_TYPE == "Repeater"} {
+    playMsg "Core" "repeater";
+  }
   playSilence 500;
 }
 
@@ -330,7 +326,7 @@ proc transmit {is_on} {
   #puts "Turning the transmitter $is_on";
   variable prev_ident;
   variable need_ident;
-  if {$is_on && ([clock seconds] - $prev_ident > 10)} {
+  if {$is_on && ([clock seconds] - $prev_ident > 5)} {
     set need_ident 1;
   }
 }
@@ -343,10 +339,8 @@ proc transmit {is_on} {
 #
 proc squelch_open {rx_id is_open} {
   variable sql_rx_id;
-  variable rx_squelch_open;
-  #puts "@@@ Logic: The squelch is $is_open on RX $rx_id";
+  #puts "The squelch is $is_open on RX $rx_id";
   set sql_rx_id $rx_id;
-  set rx_squelch_open $is_open;
 }
 
 
@@ -376,9 +370,10 @@ proc dtmf_digit_received {digit duration} {
 proc dtmf_cmd_received {cmd} {
   #global active_module
 
-  # Example: Ignore all commands starting with 3 in the EchoLink module
+  # Example: Ignore all commands starting with 3 in the EchoLink module.
+  #          Allow commands that have four or more digits.
   #if {$active_module == "EchoLink"} {
-  #  if {[string index $cmd 0] == "3"} {
+  #  if {[string length $cmd] < 4 && [string index $cmd 0] == "3"} {
   #    puts "Ignoring random connect command for module EchoLink: $cmd"
   #    return 1
   #  }
@@ -438,7 +433,6 @@ proc addTimerTickSubscriber {func} {
 # functions when it is time to identify.
 #
 proc checkPeriodicIdentify {} {
-  variable rx_squelch_open;
   variable prev_ident;
   variable short_ident_interval;
   variable long_ident_interval;
@@ -446,33 +440,6 @@ proc checkPeriodicIdentify {} {
   variable ident_only_after_tx;
   variable need_ident;
   global logic_name;
-
-  ######################################
-
-  set now [clock seconds]
-  set ts [clock format $now -format {%m-%d %H:%M} -gmt 1]
-  if {! $need_ident} {
-    puts "@@@@@@ $ts Logic: Ident not needed."
-  }
-
-  if {$rx_squelch_open} {
-    puts "@@@@@@ $ts Logic: Squelch is open."
-  }
-
-  if {$need_ident && !$rx_squelch_open} {
-    if {$now - $prev_ident >= $min_time_between_ident} {
-      CW::play %identify%
-      set prev_ident $now
-      set need_ident 0
-      puts "@@@@@@ $ts Logic: PLAYED IDENT"
-    } else {
-      puts "@@@@@@ $ts Logic: Less than min time between idents."
-    }
-  }
-
-  return
-
-  ######################################
 
   if {$short_ident_interval == 0} {
     return;
